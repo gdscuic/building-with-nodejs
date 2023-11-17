@@ -1,0 +1,17 @@
+{
+  "name": "building-with-nodejs",
+  "version": "1.0.0",
+  "description": "A simple Discord bot for the Building with Node.js event for GDSC at UIC",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Angel (https://zyplos.dev)",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "octokit": "^3.1.2"
+  }
+}
