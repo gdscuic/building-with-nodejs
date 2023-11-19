@@ -1,21 +1,26 @@
 require("dotenv").config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const { getCommandsFromDirectory } = require("./common.js");
+const handleGitHubBoard = require("./githubBoard.js");
 
-// create a new instance of the Discord client
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// grab all commands from the commands directory
 const commands = getCommandsFromDirectory();
 
-// this event will only trigger after logging in
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
+
+  // run our function once on startup
+  handleGitHubBoard(client).catch(console.error);
+
+  // schedule our function to run every hour to the board gets updated
+  setInterval(() => {
+    handleGitHubBoard(client).catch(console.error);
+  }, 1000 * 60 * 60);
 });
 
-// this event will trigger when the bot receives a new interaction event
 client.on("interactionCreate", async (interaction) => {
-  // there are different types of interactions, we only want to handle chat commands
+  // other interaction types exist but we only want to handle chat slash commands
   if (!interaction.isChatInputCommand()) return;
 
   // check if commands map has the command from the interaction

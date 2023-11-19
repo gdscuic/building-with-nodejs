@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-// TODO import octokit
+const { Octokit } = require("octokit");
 
-// TODO create octokit instance
+const octokit = new Octokit();
 
 module.exports = {
   properties: new SlashCommandBuilder()
@@ -10,17 +10,38 @@ module.exports = {
     .addStringOption((option) => option.setName("username").setDescription("A GitHub username").setRequired(true)),
 
   async run(interaction) {
-    // TODO defer the interaction while we fetch the data
+    const username = interaction.options.getString("username");
 
-    // TODO get the username from the interaction
+    if (!username) {
+      interaction.reply("You need to provide a username!");
+      return;
+    }
 
-    // TODO check if the username is blank
-
-    // TODO try to get the user from GitHub
     try {
-      // TODO create a message embed with the user's info
+      const { data } = await octokit.rest.users.getByUsername({ username });
+
+      const msgEmbed = new EmbedBuilder()
+        .setColor("#315e7d")
+        .setTitle(data.name)
+        .setURL(data.html_url)
+        .setThumbnail(data.avatar_url)
+        .setDescription(data.bio)
+        .addFields(
+          { name: "Followers", value: data.followers.toString(), inline: true },
+          { name: "Following", value: data.following.toString(), inline: true },
+          { name: "Public Repos", value: data.public_repos.toString(), inline: true }
+        )
+        .setFooter({ text: `${data.blog + " " || ""}• Joined GitHub on` })
+        .setTimestamp(new Date(data.created_at));
+
+      interaction.reply({ embeds: [msgEmbed] });
     } catch (error) {
-      // TODO check if error.status == 404
+      if (error.status === 404) {
+        return interaction.reply("That user doesn't exist!");
+      }
+
+      console.error(error);
+      return interaction.reply("Sorry, I got an error trying to get that GitHub user.");
     }
   },
 };
